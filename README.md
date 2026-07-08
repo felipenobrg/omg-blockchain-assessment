@@ -133,12 +133,15 @@ It is intended as an assessment artifact and can be extended for more advanced s
 
 ## Testing
 
-A basic regression suite is included in [tests/blockchain.test.js](tests/blockchain.test.js).
+Backend unit and HTTP integration tests live in [tests/](tests). Smart contract tests live in
+[test/AssessmentToken.test.js](test/AssessmentToken.test.js) and run under Hardhat/Mocha, so the
+two suites are run separately.
 
 Run:
 
 ```bash
-node --test
+npm test              # backend: unit + http integration tests
+npm run test:contracts   # smart contract tests
 ```
 
 ---

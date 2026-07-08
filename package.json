@@ -10,7 +10,9 @@
     "build": "react-scripts build",
     "serve": "npm run build && npm run server",
     "prod": "npm run serve",
-    "lint": "eslint src --ext .js,.jsx"
+    "lint": "eslint src --ext .js,.jsx",
+    "test": "node --test tests/*.test.js",
+    "test:contracts": "hardhat test"
   },
   "keywords": [
     "blockchain",
