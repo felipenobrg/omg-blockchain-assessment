@@ -1,13 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { fetchDashboard } from '../api/blockchain.api';
 import { POLL_INTERVAL_MS } from '../constants';
+import usePolling from './usePolling';
 
 const useBlockchain = (pollInterval = POLL_INTERVAL_MS) => {
   const [chain, setChain] = useState(null);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const intervalRef = useRef(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -22,11 +22,7 @@ const useBlockchain = (pollInterval = POLL_INTERVAL_MS) => {
     }
   }, []);
 
-  useEffect(() => {
-    refresh();
-    intervalRef.current = setInterval(refresh, pollInterval);
-    return () => clearInterval(intervalRef.current);
-  }, [refresh, pollInterval]);
+  usePolling(refresh, pollInterval);
 
   return { chain, stats, loading, error, refresh };
 };
