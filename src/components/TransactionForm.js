@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import './TransactionForm.css';
 import { addTransaction } from '../api/blockchain.api';
+import { signTransaction } from '../utils/wallet';
 
-const TransactionForm = ({ onTransactionAdded }) => {
-  const [formData, setFormData] = useState({
-    fromAddress: '',
-    toAddress: '',
-    amount: '',
-  });
+const TransactionForm = ({ wallet, onTransactionAdded }) => {
+  const [formData, setFormData] = useState({ toAddress: '', amount: '' });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -22,9 +19,14 @@ const TransactionForm = ({ onTransactionAdded }) => {
     setMessage('');
 
     try {
-      await addTransaction(formData.fromAddress, formData.toAddress, formData.amount);
+      const fromAddress = wallet.publicKeyHex;
+      const { toAddress, amount } = formData;
+      const timestamp = Date.now();
+      const signature = await signTransaction({ fromAddress, toAddress, amount, timestamp }, wallet.privateKey);
+
+      await addTransaction(fromAddress, toAddress, amount, timestamp, signature);
       setMessage('Transaction added successfully!');
-      setFormData({ fromAddress: '', toAddress: '', amount: '' });
+      setFormData({ toAddress: '', amount: '' });
       onTransactionAdded();
     } catch (err) {
       setMessage(err.message || 'Failed to add transaction');
@@ -33,26 +35,27 @@ const TransactionForm = ({ onTransactionAdded }) => {
     }
   };
 
+  if (!wallet) {
+    return (
+      <div className="transaction-form">
+        <h2 className="panel-title">Create Transaction</h2>
+        <p className="panel-subtitle">Generate a wallet above before creating a signed transaction.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="transaction-form">
       <h2 className="panel-title">Create Transaction</h2>
-      
+
       <form onSubmit={handleSubmit}>
-        <p className="panel-subtitle">Use a wallet public key and a signed transaction payload to test the blockchain flow.</p>
+        <p className="panel-subtitle">Transactions are signed locally with your wallet's private key.</p>
 
         <div className="form-group">
-          <label htmlFor="fromAddress">From Address</label>
-          <input
-            type="text"
-            id="fromAddress"
-            name="fromAddress"
-            value={formData.fromAddress}
-            onChange={handleChange}
-            placeholder="e.g., wallet-public-key"
-            required
-          />
+          <label>From Address</label>
+          <div className="field-value hash">{wallet.publicKeyHex}</div>
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="toAddress">To Address</label>
           <input
@@ -61,11 +64,11 @@ const TransactionForm = ({ onTransactionAdded }) => {
             name="toAddress"
             value={formData.toAddress}
             onChange={handleChange}
-            placeholder="e.g., wallet-public-key"
+            placeholder="e.g., recipient public key"
             required
           />
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="amount">Amount</label>
           <input
@@ -80,13 +83,13 @@ const TransactionForm = ({ onTransactionAdded }) => {
             required
           />
         </div>
-        
+
         {message && (
           <div className={`form-message ${message.includes('success') ? 'success' : 'error'}`}>
             {message}
           </div>
         )}
-        
+
         <button type="submit" className="submit-button" disabled={loading}>
           {loading ? 'Adding...' : 'Add Transaction'}
         </button>
