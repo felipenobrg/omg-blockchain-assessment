@@ -144,6 +144,16 @@ npm test              # backend: unit + http integration tests
 npm run test:contracts   # smart contract tests
 ```
 
+### Continuous Integration
+
+[.github/workflows/ci.yml](.github/workflows/ci.yml) runs `npm ci`, `npm test`, `npm run
+test:contracts`, and `npx hardhat compile` on every push/PR to `main`. The workflow itself has
+been validated locally end-to-end (including a clean `rm -rf node_modules && npm ci`) — all four
+steps pass. It is not currently showing a green run on GitHub because the repository owner's
+GitHub account is account-locked for an unrelated billing issue, which blocks Actions from
+starting a job at all (not a failure in the workflow or the code). The file is kept in the repo
+as the intended CI configuration.
+
 ---
 
 ## Design Decisions & Trade-offs
