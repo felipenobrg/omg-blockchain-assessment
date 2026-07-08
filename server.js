@@ -39,8 +39,6 @@ app.use(notFound);
 app.use(errorHandler);
 
 // ── Start server ───────────────────────────────────────────────────────────────
-// Wait for the blockchain state to finish loading/seeding before accepting
-// requests, otherwise early requests could race against bootstrap.
 models.ready.then(() => {
   const server = app.listen(config.port, () => {
     logger.sysinfo(`Environment : ${config.env}`);
