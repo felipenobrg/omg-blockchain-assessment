@@ -255,6 +255,18 @@ The frontend no longer calls it — `WalletPanel` generates keys in the browser.
 in the backend since removing an existing API contract wasn't asked for, but generating a private
 key server-side and returning it over HTTP is not a pattern worth building on.
 
+### Persistence is a flat JSON file, made crash-safe instead of switching to a database
+
+The real risk with a JSON file isn't the format — it's that `fs.writeFile` overwrites the file
+in place, so a crash mid-write (power loss, `kill -9`, an unhandled exception) can leave a
+truncated, corrupted file behind and lose the whole chain. `persistence.service.js#save` now
+writes the new state to a temp file first, then `fs.rename`s it over the real file — `rename` is
+atomic on the same filesystem, so the state file on disk is always either the old complete state
+or the new complete state, never a partial write. That's the actual robustness gap this format
+had; swapping JSON for SQLite/a real database would add schema design and an object-relational
+mapping layer without fixing anything this doesn't already fix, so it was deliberately left out
+as disproportionate complexity for this project's scope.
+
 ---
 
 ## Known Limitations
@@ -262,6 +274,8 @@ key server-side and returning it over HTTP is not a pattern worth building on.
 - The blockchain is still a simplified educational implementation, not a production-grade distributed ledger.
 - There is no authentication/authorization on any endpoint — anyone who can reach the API can mine blocks or check any address's balance.
 - The smart contract is intentionally simple for assessment purposes.
+- Persistence is a single JSON file (crash-safe via atomic writes, see Trade-offs above) rather
+  than a real database — fine for this project's scale, not meant to scale beyond it.
 
 ---
 
