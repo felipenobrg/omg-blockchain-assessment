@@ -138,7 +138,7 @@ class Blockchain {
     }
 
     if (!transaction.isValid()) {
-      throw new Error('Cannot add unsigned or invalid transaction to chain');
+      throw new Error('Cannot add transaction: missing or invalid signature');
     }
 
     this.pendingTransactions.push(transaction);

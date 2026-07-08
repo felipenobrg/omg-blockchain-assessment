@@ -1,5 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
 
 const { Blockchain, Transaction } = require('../models/blockchain');
 const persistenceService = require('../services/persistence.service');
@@ -29,8 +30,9 @@ test('rejects unsigned transactions', () => {
 
 test('persists and restores blockchain state', async () => {
   const chain = new Blockchain(1, 10);
+  const { privateKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'secp256k1' });
   const tx = new Transaction('wallet-a', 'wallet-b', 25);
-  tx.signature = 'signature-placeholder';
+  tx.signTransaction(privateKey);
   chain.addTransaction(tx);
 
   await persistenceService.save(chain);
