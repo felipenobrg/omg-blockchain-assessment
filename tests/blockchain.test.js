@@ -4,6 +4,7 @@ const crypto = require('node:crypto');
 
 const { Blockchain, Transaction } = require('../models/blockchain');
 const persistenceService = require('../services/persistence.service');
+const { createSignedTransaction } = require('./helpers');
 
 const originalStatePath = process.env.BLOCKCHAIN_STATE_PATH;
 
@@ -82,27 +83,13 @@ test('detects a broken link between blocks', () => {
 });
 
 test('accepts a transaction signed the same way the browser wallet signs it', async () => {
-  const subtle = crypto.webcrypto.subtle;
   const chain = new Blockchain(1, 100);
+  const signed = await createSignedTransaction({ toAddress: 'recipient', amount: 10 });
 
-  const keyPair = await subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
-  const spki = await subtle.exportKey('spki', keyPair.publicKey);
-  const fromAddress = Buffer.from(spki).toString('hex');
-  const toAddress = 'recipient';
-  const amount = 10;
-  const timestamp = Date.now();
+  const tx = new Transaction(signed.fromAddress, signed.toAddress, signed.amount, signed.timestamp);
+  tx.signature = signed.signature;
 
-  const hashHex = crypto.createHash('sha256').update(fromAddress + toAddress + amount + timestamp).digest('hex');
-  const signatureBuffer = await subtle.sign(
-    { name: 'ECDSA', hash: 'SHA-256' },
-    keyPair.privateKey,
-    Buffer.from(hashHex, 'utf8')
-  );
-
-  const tx = new Transaction(fromAddress, toAddress, amount, timestamp);
-  tx.signature = Buffer.from(signatureBuffer).toString('hex');
-
-  chain.minePendingTransactions(fromAddress);
+  chain.minePendingTransactions(signed.fromAddress);
 
   assert.doesNotThrow(() => chain.addTransaction(tx));
 });
