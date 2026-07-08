@@ -81,12 +81,20 @@ const normalizeState = (state) => {
 };
 
 /**
- * Serialize the current blockchain state and write it to disk.
+ * Serialize the current blockchain state and write it to disk atomically:
+ * the payload is written to a temp file first, then moved into place with
+ * `rename` (atomic on the same filesystem). A crash mid-write can only ever
+ * leave the temp file incomplete — the real state file is never touched
+ * until the write it holds is fully complete, so it can never be left
+ * truncated/corrupted by an interrupted write.
  *
  * @param {Blockchain} blockchain - The blockchain instance to persist.
  * @returns {Promise<void>}
  */
 const save = async (blockchain) => {
+  const statePath = resolveStatePath();
+  const tempPath = `${statePath}.tmp-${process.pid}-${Date.now()}`;
+
   try {
     const payload = {
       chain: blockchain.chain,
@@ -95,11 +103,13 @@ const save = async (blockchain) => {
       miningReward: blockchain.miningReward,
     };
 
-    await fs.mkdir(path.dirname(resolveStatePath()), { recursive: true });
-    await fs.writeFile(resolveStatePath(), JSON.stringify(payload, null, 2));
-    logger.info(`Persisted blockchain state to ${resolveStatePath()}`);
+    await fs.mkdir(path.dirname(statePath), { recursive: true });
+    await fs.writeFile(tempPath, JSON.stringify(payload, null, 2));
+    await fs.rename(tempPath, statePath);
+    logger.info(`Persisted blockchain state to ${statePath}`);
   } catch (error) {
     logger.error(`Failed to persist blockchain state: ${error.message}`);
+    await fs.unlink(tempPath).catch(() => {});
   }
 };
 
