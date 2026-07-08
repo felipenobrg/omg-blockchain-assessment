@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './App.css';
 
 import BlockchainViewer from './components/BlockchainViewer';
+import PendingTransactions from './components/PendingTransactions';
 import TransactionForm from './components/TransactionForm';
 import WalletPanel from './components/WalletPanel';
 import StatsPanel from './components/StatsPanel';
@@ -45,6 +46,7 @@ function App() {
         <div className="main-content">
           <div className="left-panel">
             <StatsPanel stats={stats} onMine={handleMine} wallet={wallet} />
+            <PendingTransactions />
             <WalletPanel wallet={wallet} onWalletCreated={setWallet} chain={chain} />
             <TransactionForm wallet={wallet} onTransactionAdded={refresh} />
           </div>
