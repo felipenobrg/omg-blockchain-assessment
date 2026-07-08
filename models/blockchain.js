@@ -41,11 +41,11 @@ class Block {
 }
 
 class Transaction {
-  constructor(fromAddress, toAddress, amount) {
+  constructor(fromAddress, toAddress, amount, timestamp = Date.now()) {
     this.fromAddress = fromAddress;
     this.toAddress = toAddress;
     this.amount = amount;
-    this.timestamp = Date.now();
+    this.timestamp = timestamp;
     this.signature = '';
   }
 
