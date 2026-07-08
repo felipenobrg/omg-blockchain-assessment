@@ -16,7 +16,7 @@ const BlockchainViewer = ({ blockchain }) => {
       
       <div className="blocks-container">
         {blockchain.chain.map((block, index) => (
-          <div key={index} className="block-card">
+          <div key={block.hash} className="block-card">
             <div className="block-header">
               <span className="block-number">Block #{index}</span>
               {index === 0 && <span className="genesis-badge">Genesis</span>}
@@ -54,7 +54,7 @@ const BlockchainViewer = ({ blockchain }) => {
                 <div className="transactions-list">
                   <div className="transactions-header">Transactions:</div>
                   {block.transactions.map((tx, txIndex) => (
-                    <div key={txIndex} className="transaction-item">
+                    <div key={`${block.hash}-${txIndex}`} className="transaction-item">
                       <div className="tx-from">
                         <span className="tx-label">From:</span>
                         <span className="tx-address">{tx.fromAddress || 'Mining Reward'}</span>
