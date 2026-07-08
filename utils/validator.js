@@ -6,6 +6,13 @@ const isNonEmptyString = (value) =>
 
 const isValidAddress = (address) => isNonEmptyString(address);
 
+/**
+ * @param {string} address
+ * @returns {boolean} true only if address is a hex string matching the exact
+ * length of a P-256 SPKI DER-encoded public key. Used for `fromAddress`,
+ * which must be a real signer, unlike recipient addresses which may be
+ * arbitrary labels.
+ */
 const isValidSenderAddress = (address) =>
   isNonEmptyString(address) && HEX_REGEX.test(address) && address.length === P256_SPKI_HEX_LENGTH;
 
@@ -14,6 +21,10 @@ const isValidAmount = (amount) => {
   return !isNaN(parsed) && isFinite(parsed) && parsed > 0;
 };
 
+/**
+ * @param {*} timestamp
+ * @returns {boolean} true if timestamp parses to a finite, positive number.
+ */
 const isValidTimestamp = (timestamp) => {
   const parsed = Number(timestamp);
   return Number.isFinite(parsed) && parsed > 0;

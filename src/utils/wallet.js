@@ -8,6 +8,13 @@ const sha256Hex = async (text) => {
   return bufferToHex(digest);
 };
 
+/**
+ * Generates a P-256 ECDSA key pair entirely in the browser via the Web
+ * Crypto API. The private key never leaves this CryptoKey object — it is
+ * never exported or sent to the server.
+ *
+ * @returns {Promise<{publicKeyHex: string, privateKey: CryptoKey}>}
+ */
 export const generateWallet = async () => {
   const keyPair = await window.crypto.subtle.generateKey(
     { name: 'ECDSA', namedCurve: 'P-256' },
@@ -21,6 +28,14 @@ export const generateWallet = async () => {
   return { publicKeyHex, privateKey: keyPair.privateKey };
 };
 
+/**
+ * Signs a transaction the same way the backend verifies it: sha256 digest
+ * of `fromAddress+toAddress+amount+timestamp`, ECDSA-SHA256 over that hash.
+ *
+ * @param {{fromAddress: string, toAddress: string, amount: number, timestamp: number}} transaction
+ * @param {CryptoKey} privateKey
+ * @returns {Promise<string>} hex-encoded signature.
+ */
 export const signTransaction = async ({ fromAddress, toAddress, amount, timestamp }, privateKey) => {
   const hashHex = await sha256Hex(`${fromAddress}${toAddress}${amount}${timestamp}`);
 
