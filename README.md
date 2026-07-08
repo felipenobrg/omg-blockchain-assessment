@@ -146,10 +146,46 @@ npm run test:contracts   # smart contract tests
 
 ---
 
+## Design Decisions & Trade-offs
+
+### Signing curve: P-256 instead of secp256k1
+
+Wallets and transaction signatures use the **P-256** elliptic curve, not the `secp256k1` curve
+used by Bitcoin/Ethereum. This is deliberate: wallet key generation and transaction signing
+happen entirely **client-side** in the browser via the native Web Crypto API
+([src/utils/wallet.js](src/utils/wallet.js)), so the private key never leaves the browser or
+touches the server. Web Crypto's ECDSA implementation only supports P-256/P-384/P-521 — no
+browser supports `secp256k1` natively — so P-256 was the only curve that allowed real
+client-side signing without pulling in a third-party elliptic-curve library. The backend signs
+and verifies with `sha256` digest and `ieee-p1363` signature encoding to match exactly what
+`window.crypto.subtle` produces.
+
+### Why a transaction's timestamp must be supplied by the client
+
+A signed transaction's hash includes its `timestamp`. If the server generated its own timestamp
+when reconstructing the transaction from the request body, it would never match the timestamp
+the client actually signed, and every signature verification would fail. `Transaction` accepts
+an explicit `timestamp`, and the API requires one whenever a `signature` is present.
+
+### Balance/double-spend checks are mempool-aware
+
+`addTransaction` rejects a transaction if its amount exceeds the sender's confirmed balance minus
+whatever that same address already has pending — otherwise an address could submit multiple
+transactions in a row that each individually looked affordable but collectively overspent before
+a block was mined.
+
+### `POST /api/wallets` (server-side key generation) is kept for compatibility only
+
+The frontend no longer calls it — `WalletPanel` generates keys in the browser. The endpoint stays
+in the backend since removing an existing API contract wasn't asked for, but generating a private
+key server-side and returning it over HTTP is not a pattern worth building on.
+
+---
+
 ## Known Limitations
 
 - The blockchain is still a simplified educational implementation, not a production-grade distributed ledger.
-- Wallet generation is demonstration-oriented and does not yet implement a full signing workflow end-to-end in the UI.
+- There is no authentication/authorization on any endpoint — anyone who can reach the API can mine blocks or check any address's balance.
 - The smart contract is intentionally simple for assessment purposes.
 
 ---
