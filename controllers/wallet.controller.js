@@ -6,7 +6,7 @@ const { blockchain } = require('../models');
 const generateWallet = (req, res) => {
   try {
     const { publicKey, privateKey } = crypto.generateKeyPairSync('ec', {
-      namedCurve: 'secp256k1',
+      namedCurve: 'P-256',
     });
 
     const publicKeyHex = publicKey.export({ type: 'spki', format: 'der' }).toString('hex');

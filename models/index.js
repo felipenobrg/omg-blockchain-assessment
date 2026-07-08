@@ -16,7 +16,7 @@ const seedDemoData = () => {
 
   for (const { from, to, amount } of config.demoData.transactions) {
     const demoTx = new Transaction(from, to, amount);
-    const { privateKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'secp256k1' });
+    const { privateKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' });
     demoTx.signTransaction(privateKey);
     blockchain.addTransaction(demoTx);
   }

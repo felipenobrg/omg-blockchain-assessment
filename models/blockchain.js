@@ -60,15 +60,13 @@ class Transaction {
     try {
       const publicKey = crypto.createPublicKey(signingKey);
       const publicKeyDer = publicKey.export({ type: 'spki', format: 'der' });
-      const publicKeyHex = publicKeyDer.toString('hex');
+      this.fromAddress = publicKeyDer.toString('hex');
 
-      if (this.fromAddress && this.fromAddress !== publicKeyHex && this.fromAddress.length > 0) {
-        this.fromAddress = publicKeyHex;
-      } else {
-        this.fromAddress = publicKeyHex;
-      }
       const hashTx = this.calculateHash();
-      const signature = crypto.sign(null, Buffer.from(hashTx), signingKey);
+      const signature = crypto.sign('sha256', Buffer.from(hashTx), {
+        key: signingKey,
+        dsaEncoding: 'ieee-p1363',
+      });
       this.signature = signature.toString('hex');
     } catch (error) {
       throw new Error(`Unable to sign transaction: ${error.message}`);
@@ -90,9 +88,9 @@ class Transaction {
       });
 
       return crypto.verify(
-        null,
+        'sha256',
         Buffer.from(this.calculateHash()),
-        publicKey,
+        { key: publicKey, dsaEncoding: 'ieee-p1363' },
         Buffer.from(this.signature, 'hex')
       );
     } catch {
