@@ -45,7 +45,7 @@ function App() {
         <div className="main-content">
           <div className="left-panel">
             <StatsPanel stats={stats} onMine={handleMine} wallet={wallet} />
-            <WalletPanel wallet={wallet} onWalletCreated={setWallet} />
+            <WalletPanel wallet={wallet} onWalletCreated={setWallet} chain={chain} />
             <TransactionForm wallet={wallet} onTransactionAdded={refresh} />
           </div>
 

@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './TransactionForm.css';
 import { fetchBalance } from '../api/blockchain.api';
 import { generateWallet } from '../utils/wallet';
 
-const WalletPanel = ({ wallet, onWalletCreated }) => {
+const WalletPanel = ({ wallet, onWalletCreated, chain }) => {
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (!wallet) return;
+
+    fetchBalance(wallet.publicKeyHex)
+      .then((res) => setBalance(res.balance))
+      .catch(() => {});
+  }, [wallet, chain]);
 
   const handleCreateWallet = async () => {
     setLoading(true);
@@ -15,8 +23,6 @@ const WalletPanel = ({ wallet, onWalletCreated }) => {
     try {
       const newWallet = await generateWallet();
       onWalletCreated(newWallet);
-      const balanceResponse = await fetchBalance(newWallet.publicKeyHex);
-      setBalance(balanceResponse.balance);
       setMessage('Wallet created successfully');
     } catch (err) {
       setMessage(err.message || 'Failed to create wallet');
