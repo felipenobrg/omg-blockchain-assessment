@@ -1,7 +1,7 @@
 import React from 'react';
 import './StatsPanel.css';
 
-const StatsPanel = ({ stats, onMine }) => {
+const StatsPanel = ({ stats, onMine, wallet }) => {
   if (!stats) return null;
 
   return (
@@ -40,6 +40,11 @@ const StatsPanel = ({ stats, onMine }) => {
       <button className="mine-button" onClick={onMine}>
         ⛏️ Mine Block
       </button>
+      <p className="panel-subtitle">
+        {wallet
+          ? 'Reward goes to your active wallet.'
+          : 'No active wallet — reward goes to a default address. Create a wallet above first.'}
+      </p>
     </div>
   );
 };

@@ -16,7 +16,7 @@ function App() {
 
   const handleMine = async () => {
     try {
-      await mineBlock();
+      await mineBlock(wallet?.publicKeyHex);
       await refresh();
     } catch (err) {
       console.error('Mining failed:', err.message);
@@ -44,7 +44,7 @@ function App() {
 
         <div className="main-content">
           <div className="left-panel">
-            <StatsPanel stats={stats} onMine={handleMine} />
+            <StatsPanel stats={stats} onMine={handleMine} wallet={wallet} />
             <WalletPanel wallet={wallet} onWalletCreated={setWallet} />
             <TransactionForm wallet={wallet} onTransactionAdded={refresh} />
           </div>
