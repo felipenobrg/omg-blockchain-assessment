@@ -20,8 +20,10 @@ It combines:
 
 ### Frontend
 - React dashboard to view blockchain state and mine blocks
-- Wallet creation panel for generating key material and checking balances
-- Transaction form for creating new pending transactions
+- Client-side wallet generation and transaction signing via the Web Crypto API — the private key
+  never leaves the browser
+- Transaction form for creating new signed pending transactions
+- A live view of pending transactions waiting to be mined, separate from confirmed blocks
 - Polling-based refresh for near-real-time updates
 
 ### Smart Contracts
@@ -33,17 +35,23 @@ It combines:
 ## Project Structure
 
 ```text
-hometask-blockchain/
+blockchain-hometask/
+├── .github/workflows/   # CI (GitHub Actions)
 ├── config/
+├── contracts/           # Solidity contract
 ├── controllers/
-├── contracts/
 ├── middleware/
-├── models/
+├── models/               # domain: Block, Transaction, Blockchain
+├── public/                # React static assets
 ├── routes/
-├── scripts/
-├── services/
-├── src/
-├── tests/
+├── scripts/               # contract deployment script
+├── services/               # persistence
+├── src/                     # React app
+├── test/                     # Hardhat/Chai contract tests
+├── tests/                     # Node test runner: unit + http integration tests
+├── utils/                       # shared backend helpers (validation, logging, responses)
+├── .env.example
+├── hardhat.config.js
 ├── package.json
 ├── server.js
 └── README.md
@@ -90,6 +98,11 @@ only.
   transaction's signature verifies, the stored hash matches a fresh recomputation of the content,
   `previousHash` matches the prior block's hash, and the hash actually satisfies the configured
   difficulty (not just "looks right").
+- **Pending vs. confirmed transactions**: `POST /api/transactions` only adds a transaction to
+  `blockchain.pendingTransactions` (the mempool) — it does not touch the chain. A transaction only
+  becomes confirmed (permanent, part of `blockchain.chain`) once `POST /api/mine` bundles the
+  current mempool into a new block and mines it; the mempool is then cleared. The frontend's
+  "Pending Transactions" panel and "Blockchain" panel reflect exactly this split.
 
 ---
 
@@ -111,17 +124,10 @@ npm install
 cp .env.example .env
 ```
 
-If you do not have an .env.example file yet, create one with values such as:
-
-```env
-PORT=3002
-NODE_ENV=development
-BLOCKCHAIN_DIFFICULTY=2
-BLOCKCHAIN_MINING_REWARD=100
-INITIAL_MINER_ADDRESS=genesis-miner
-SEED_DEMO_DATA=true
-REACT_APP_API_URL=http://localhost:3002
-```
+All variables have sane defaults, so `.env` is optional unless you need to change a port, point
+persistence somewhere else, or disable demo data. See [.env.example](.env.example) for the full
+list (`NODE_ENV`, `PORT`, `CORS_ORIGIN`, `BLOCKCHAIN_DIFFICULTY`, `BLOCKCHAIN_MINING_REWARD`,
+`INITIAL_MINER_ADDRESS`, `SEED_DEMO_DATA`, `BLOCKCHAIN_STATE_PATH`, `REACT_APP_API_URL`).
 
 ### Run the app
 
@@ -151,13 +157,15 @@ All API responses follow this pattern:
 |---|---|---|
 | GET | /api/chain | Return the full blockchain |
 | GET | /api/chain/valid | Return whether the chain is valid |
-| POST | /api/transactions | Add a pending transaction |
-| GET | /api/transactions/pending | View pending transactions |
+| POST | /api/transactions | Add a signed, pending transaction |
+| GET | /api/transactions/pending | View transactions waiting to be mined |
+| GET | /api/transactions/all | View all confirmed transactions across the chain |
 | POST | /api/mine | Mine the pending transactions |
 | GET | /api/balance/:address | Get an address balance |
 | GET | /api/stats | View chain and mining statistics |
-| POST | /api/wallets | Generate a wallet-like key pair |
+| POST | /api/wallets | Generate a wallet-like key pair (server-side, kept for compatibility only) |
 | GET | /api/wallets/:address | View a balance for a wallet address |
+| GET | /health | Health check (no rate limit) |
 
 ---
 
@@ -166,10 +174,25 @@ All API responses follow this pattern:
 The Solidity contract in [contracts/AssessmentToken.sol](contracts/AssessmentToken.sol) is a simple ERC-20-style token example. It demonstrates:
 - token supply initialization
 - balance tracking
-- transfer and approval flows
-- basic events
+- transfer, approval, and `transferFrom` flows, with zero-address guards
+- a `burn` function that destroys tokens from the caller's own balance and reduces total supply
+- `Transfer`/`Approval` events, including a `Transfer` from `address(0)` on mint and to
+  `address(0)` on burn (the ERC-20 convention)
 
-It is intended as an assessment artifact and can be extended for more advanced scenarios.
+It is intended as an assessment artifact — no owner, no minting after deployment, no
+pause/upgrade mechanism, by design (see [Known Limitations](#known-limitations)).
+
+### Compiling, testing, and deploying
+
+```bash
+npx hardhat compile        # compiles contracts/AssessmentToken.sol
+npm run test:contracts     # runs test/AssessmentToken.test.js
+npx hardhat run scripts/deploy-contract.js   # deploys to Hardhat's ephemeral local network
+```
+
+`scripts/deploy-contract.js` deploys with an initial supply of 1,000,000 tokens and logs the
+deployed address. To deploy to a real network, add a network config to
+[hardhat.config.js](hardhat.config.js) and pass `--network <name>` to the `hardhat run` command.
 
 ---
 
