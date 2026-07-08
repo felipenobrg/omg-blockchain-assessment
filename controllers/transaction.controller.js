@@ -3,6 +3,7 @@ const persistenceService = require('../services/persistence.service');
 const { sendSuccess, sendCreated, sendError } = require('../utils/response');
 const {
   isValidAddress,
+  isValidSenderAddress,
   isValidAmount,
   isValidTimestamp,
   sanitizeAddress,
@@ -14,8 +15,12 @@ const addTransaction = async (req, res, next) => {
   try {
     const { fromAddress, toAddress, amount, timestamp, signature } = req.body;
 
-    if (!isValidAddress(fromAddress) || !isValidAddress(toAddress)) {
-      return sendError(res, 'Invalid wallet address format', 400);
+    if (!isValidSenderAddress(fromAddress)) {
+      return sendError(res, 'From address must be a valid public key', 400);
+    }
+
+    if (!isValidAddress(toAddress)) {
+      return sendError(res, 'Invalid recipient address', 400);
     }
 
     if (!isValidAmount(amount)) {
