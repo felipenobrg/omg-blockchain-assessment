@@ -51,6 +51,48 @@ hometask-blockchain/
 
 ---
 
+## Architecture
+
+Layered backend, each layer with one job:
+
+```
+routes/       → define endpoints, wire middleware, no business logic
+controllers/  → orchestrate a request: validate input, call the model/service, shape the response
+models/       → domain behavior (Block, Transaction, Blockchain — hashing, PoW, signature
+                validation, balance calculation), no Express dependency
+services/     → cross-cutting concerns outside the domain (persistence to disk)
+middleware/   → cross-cutting concerns outside the domain (CORS, rate limiting, error handling,
+                logging, request validation)
+```
+
+Example request flow — `POST /api/mine`:
+
+```
+Client → routes/mining.routes.js (writeLimiter) → controllers/mining.controller.js
+  → models/index.js (blockchain singleton) → models/blockchain.js#minePendingTransactions
+    → Block#mineBlock (proof-of-work loop)
+  → services/persistence.service.js#save (writes blockchain.json)
+  → response
+```
+
+The frontend mirrors this separation: `src/api/` is the only layer that talks to the backend
+(components never call `fetch`/`axios` directly), `src/hooks/` owns data-fetching and polling,
+`src/utils/wallet.js` owns all browser-side cryptography, and `src/components/` are presentation
+only.
+
+### How block hashing, proof-of-work, and chain validation work
+
+- **Hashing**: `Block#calculateHash` and `Transaction#calculateHash` are `sha256` digests of the
+  block/transaction's own fields — any change to the content changes the hash.
+- **Proof-of-work**: `Block#mineBlock` increments a `nonce` and recomputes the hash until it
+  starts with `difficulty` leading zero hex characters (`Block#satisfiesDifficulty`).
+- **Chain validation**: `Blockchain#isChainValid` walks the chain checking, per block: every
+  transaction's signature verifies, the stored hash matches a fresh recomputation of the content,
+  `previousHash` matches the prior block's hash, and the hash actually satisfies the configured
+  difficulty (not just "looks right").
+
+---
+
 ## Getting Started
 
 ### Prerequisites
