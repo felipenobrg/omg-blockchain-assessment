@@ -12,6 +12,7 @@ const { apiLimiter } = require("./middleware/rateLimit.middleware");
 
 const apiRoutes = require("./routes");
 const healthRoutes = require("./routes/health.routes");
+const models = require("./models");
 const app = express();
 
 // ── Global middleware ──────────────────────────────────────────────────────────
@@ -38,20 +39,24 @@ app.use(notFound);
 app.use(errorHandler);
 
 // ── Start server ───────────────────────────────────────────────────────────────
-const server = app.listen(config.port, () => {
-  logger.sysinfo(`Environment : ${config.env}`);
-  logger.info(`Server      : http://localhost:${config.port}`);
-  logger.info(`API         : http://localhost:${config.port}/api`);
-});
+// Wait for the blockchain state to finish loading/seeding before accepting
+// requests, otherwise early requests could race against bootstrap.
+models.ready.then(() => {
+  const server = app.listen(config.port, () => {
+    logger.sysinfo(`Environment : ${config.env}`);
+    logger.info(`Server      : http://localhost:${config.port}`);
+    logger.info(`API         : http://localhost:${config.port}/api`);
+  });
 
-server.on("error", (err) => {
-  if (err.code === "EADDRINUSE") {
-    logger.error(`Port ${config.port} is already in use.`);
-    logger.error("Set a different port via PORT= environment variable.");
-    process.exit(1);
-  } else {
-    throw err;
-  }
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      logger.error(`Port ${config.port} is already in use.`);
+      logger.error("Set a different port via PORT= environment variable.");
+      process.exit(1);
+    } else {
+      throw err;
+    }
+  });
 });
 
 module.exports = app;
