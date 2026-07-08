@@ -21,10 +21,13 @@ class Block {
       .digest('hex');
   }
 
-  mineBlock(difficulty) {
+  satisfiesDifficulty(difficulty) {
     const target = Array(difficulty + 1).join('0');
+    return this.hash.substring(0, difficulty) === target;
+  }
 
-    while (this.hash.substring(0, difficulty) !== target) {
+  mineBlock(difficulty) {
+    while (!this.satisfiesDifficulty(difficulty)) {
       this.nonce++;
       this.hash = this.calculateHash();
     }
@@ -172,6 +175,7 @@ class Blockchain {
       if (!current.hasValidTransactions()) return false;
       if (current.hash !== current.calculateHash()) return false;
       if (current.previousHash !== previous.hash) return false;
+      if (!current.satisfiesDifficulty(this.difficulty)) return false;
     }
 
     return true;
