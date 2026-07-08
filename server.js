@@ -26,6 +26,7 @@ app.use("/health", healthRoutes);
 
 // ── API routes ─────────────────────────────────────────────────────────────────
 app.use("/api", apiLimiter, apiRoutes);
+app.use("/api", notFound);
 
 // ── Static build (production) ──────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, "build")));

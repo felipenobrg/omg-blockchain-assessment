@@ -127,6 +127,7 @@ test('GET /api/unknown-route returns 404', async () => {
 
   assert.equal(res.status, 404);
   assert.equal(res.body.success, false);
+  assert.match(res.body.error, /not found/i);
 });
 
 test('GET /api/chain/valid reports the chain as valid after mining and transacting', async () => {
