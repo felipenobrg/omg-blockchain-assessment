@@ -37,7 +37,12 @@ const addTransaction = async (req, res, next) => {
       transaction.signature = signature;
     }
 
-    blockchain.addTransaction(transaction);
+    try {
+      blockchain.addTransaction(transaction);
+    } catch (err) {
+      return sendError(res, err.message, 400);
+    }
+
     await persistenceService.save(blockchain);
 
     sendCreated(res, {
