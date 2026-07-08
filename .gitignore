@@ -2,6 +2,7 @@
 /build
 /artifacts
 /cache
+/blockchain.json
 .env
 *.log
 npm-debug.log*

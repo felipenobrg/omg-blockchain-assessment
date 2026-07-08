@@ -29,7 +29,7 @@
 const fs = require('fs/promises');
 const path = require('path');
 const logger = require('../utils/logger');
-const { Blockchain, Transaction } = require('../models/blockchain');
+const { Blockchain, Block, Transaction } = require('../models/blockchain');
 
 const defaultStatePath = process.env.BLOCKCHAIN_STATE_PATH || path.join(process.cwd(), 'blockchain.json');
 
