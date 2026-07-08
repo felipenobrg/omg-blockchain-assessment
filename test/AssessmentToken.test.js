@@ -68,4 +68,39 @@ describe('AssessmentToken', () => {
       token.connect(bob).transferFrom(alice.address, owner.address, 6)
     ).to.be.revertedWith('insufficient balance');
   });
+
+  it('reverts transfer to the zero address', async () => {
+    await expect(
+      token.transfer(ethers.ZeroAddress, 1)
+    ).to.be.revertedWith('transfer to zero address');
+  });
+
+  it('reverts approve to the zero address', async () => {
+    await expect(
+      token.approve(ethers.ZeroAddress, 1)
+    ).to.be.revertedWith('approve to zero address');
+  });
+
+  it('reverts transferFrom to the zero address', async () => {
+    await token.approve(alice.address, 10);
+
+    await expect(
+      token.connect(alice).transferFrom(owner.address, ethers.ZeroAddress, 1)
+    ).to.be.revertedWith('transfer to zero address');
+  });
+
+  it('burns tokens from the caller balance and reduces total supply', async () => {
+    const supplyBefore = await token.totalSupply();
+
+    await expect(token.burn(100))
+      .to.emit(token, 'Transfer')
+      .withArgs(owner.address, ethers.ZeroAddress, 100);
+
+    expect(await token.balanceOf(owner.address)).to.equal(supplyBefore - 100n);
+    expect(await token.totalSupply()).to.equal(supplyBefore - 100n);
+  });
+
+  it('reverts burn when balance is insufficient', async () => {
+    await expect(token.connect(alice).burn(1)).to.be.revertedWith('insufficient balance');
+  });
 });
