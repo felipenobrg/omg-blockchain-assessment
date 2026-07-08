@@ -14,10 +14,12 @@ const seedDemoData = () => {
     return;
   }
 
-  for (const { from, to, amount } of config.demoData.transactions) {
-    const demoTx = new Transaction(from, to, amount);
+  for (const { to, amount } of config.demoData.transactions) {
     const { privateKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' });
+    const demoTx = new Transaction('', to, amount);
     demoTx.signTransaction(privateKey);
+
+    blockchain.minePendingTransactions(demoTx.fromAddress);
     blockchain.addTransaction(demoTx);
   }
 

@@ -12,8 +12,8 @@ module.exports = {
   demoData: {
     enabled: process.env.SEED_DEMO_DATA !== 'false',
     transactions: [
-      { from: 'address1', to: 'address2', amount: 100 },
-      { from: 'address2', to: 'address1', amount: 50 },
+      { to: 'address2', amount: 100 },
+      { to: 'address1', amount: 50 },
     ],
   },
 };

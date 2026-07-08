@@ -139,6 +139,15 @@ class Blockchain {
       throw new Error('Cannot add transaction: missing or invalid signature');
     }
 
+    const alreadyPending = this.pendingTransactions
+      .filter((tx) => tx.fromAddress === transaction.fromAddress)
+      .reduce((sum, tx) => sum + tx.amount, 0);
+    const availableBalance = this.getBalanceOfAddress(transaction.fromAddress) - alreadyPending;
+
+    if (transaction.amount > availableBalance) {
+      throw new Error('Cannot add transaction: amount exceeds available balance');
+    }
+
     this.pendingTransactions.push(transaction);
   }
 
