@@ -24,4 +24,6 @@ jobs:
 
       - run: npm run test:contracts
 
+      - run: npm run test:frontend
+
       - run: npx hardhat compile
