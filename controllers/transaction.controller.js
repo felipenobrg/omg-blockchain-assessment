@@ -1,6 +1,7 @@
 const { blockchain, Transaction } = require('../models');
 const persistenceService = require('../services/persistence.service');
-const { sendSuccess, sendCreated, sendError } = require('../utils/response');
+const { sendSuccess, sendCreated } = require('../utils/response');
+const HttpError = require('../utils/httpError');
 const {
   isValidAddress,
   isValidSenderAddress,
@@ -16,19 +17,19 @@ const addTransaction = async (req, res, next) => {
     const { fromAddress, toAddress, amount, timestamp, signature } = req.body;
 
     if (!isValidSenderAddress(fromAddress)) {
-      return sendError(res, 'From address must be a valid public key', 400);
+      throw new HttpError(400, 'From address must be a valid public key');
     }
 
     if (!isValidAddress(toAddress)) {
-      return sendError(res, 'Invalid recipient address', 400);
+      throw new HttpError(400, 'Invalid recipient address');
     }
 
     if (!isValidAmount(amount)) {
-      return sendError(res, 'Amount must be a positive number', 400);
+      throw new HttpError(400, 'Amount must be a positive number');
     }
 
     if (signature && !isValidTimestamp(timestamp)) {
-      return sendError(res, 'A signed transaction must include the timestamp that was signed', 400);
+      throw new HttpError(400, 'A signed transaction must include the timestamp that was signed');
     }
 
     const transaction = new Transaction(
@@ -45,7 +46,7 @@ const addTransaction = async (req, res, next) => {
     try {
       blockchain.addTransaction(transaction);
     } catch (err) {
-      return sendError(res, err.message, 400);
+      throw new HttpError(400, err.message);
     }
 
     await persistenceService.save(blockchain);

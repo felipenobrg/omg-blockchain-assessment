@@ -1,9 +1,10 @@
 const crypto = require('crypto');
 const { sendSuccess, sendError } = require('../utils/response');
+const HttpError = require('../utils/httpError');
 const { isValidAddress, sanitizeAddress } = require('../utils/validator');
 const { blockchain } = require('../models');
 
-const generateWallet = (req, res) => {
+const generateWallet = (req, res, next) => {
   try {
     const { publicKey, privateKey } = crypto.generateKeyPairSync('ec', {
       namedCurve: 'P-256',
@@ -18,7 +19,7 @@ const generateWallet = (req, res) => {
       balance: blockchain.getBalanceOfAddress(publicKeyHex),
     });
   } catch (error) {
-    sendError(res, error.message || 'Failed to create wallet', 500);
+    next(new HttpError(500, error.message || 'Failed to create wallet'));
   }
 };
 
