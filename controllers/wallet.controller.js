@@ -17,6 +17,7 @@ const generateWallet = (req, res, next) => {
       publicKey: publicKeyHex,
       privateKey: privateKeyPem,
       balance: blockchain.getBalanceOfAddress(publicKeyHex),
+      availableBalance: blockchain.getAvailableBalance(publicKeyHex),
     });
   } catch (error) {
     next(new HttpError(500, error.message || 'Failed to create wallet'));
@@ -30,7 +31,11 @@ const getWalletBalance = (req, res) => {
     return sendError(res, 'Invalid wallet address', 400);
   }
 
-  sendSuccess(res, { address, balance: blockchain.getBalanceOfAddress(address) });
+  sendSuccess(res, {
+    address,
+    balance: blockchain.getBalanceOfAddress(address),
+    availableBalance: blockchain.getAvailableBalance(address),
+  });
 };
 
 module.exports = { generateWallet, getWalletBalance };

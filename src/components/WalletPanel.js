@@ -6,6 +6,7 @@ import { formatAmount } from '../utils/formatters';
 
 const WalletPanel = ({ wallet, onWalletCreated, chain }) => {
   const [balance, setBalance] = useState(null);
+  const [availableBalance, setAvailableBalance] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -13,7 +14,10 @@ const WalletPanel = ({ wallet, onWalletCreated, chain }) => {
     if (!wallet) return;
 
     fetchBalance(wallet.publicKeyHex)
-      .then((res) => setBalance(res.balance))
+      .then((res) => {
+        setBalance(res.balance);
+        setAvailableBalance(res.availableBalance);
+      })
       .catch(() => {});
   }, [wallet, chain]);
 
@@ -55,8 +59,16 @@ const WalletPanel = ({ wallet, onWalletCreated, chain }) => {
         <div className="form-group">
           <label>Public Key (address)</label>
           <div className="field-value hash">{wallet.publicKeyHex}</div>
-          <label>Balance</label>
-          <div className="field-value">{balance !== null ? formatAmount(balance) : ''}</div>
+          <label>Available Balance</label>
+          <div className="field-value">
+            {availableBalance !== null ? formatAmount(availableBalance) : ''}
+          </div>
+          {balance !== null && availableBalance !== null && balance !== availableBalance && (
+            <p className="panel-subtitle">
+              {formatAmount(balance)} confirmed, {formatAmount(balance - availableBalance)} tied
+              up in pending transactions.
+            </p>
+          )}
         </div>
       )}
     </div>

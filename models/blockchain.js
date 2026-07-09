@@ -194,12 +194,7 @@ class Blockchain {
       throw new Error('Cannot add transaction: missing or invalid signature');
     }
 
-    const alreadyPending = this.pendingTransactions
-      .filter((tx) => tx.fromAddress === transaction.fromAddress)
-      .reduce((sum, tx) => sum + tx.amount, 0);
-    const availableBalance = this.getBalanceOfAddress(transaction.fromAddress) - alreadyPending;
-
-    if (transaction.amount > availableBalance) {
+    if (transaction.amount > this.getAvailableBalance(transaction.fromAddress)) {
       throw new Error('Cannot add transaction: amount exceeds available balance');
     }
 
@@ -221,6 +216,19 @@ class Blockchain {
     }
 
     return balance;
+  }
+
+  /**
+   * @param {string} address
+   * @returns {number} confirmed balance minus whatever address already has
+   * queued in the mempool — the amount actually free to spend right now.
+   */
+  getAvailableBalance(address) {
+    const alreadyPending = this.pendingTransactions
+      .filter((tx) => tx.fromAddress === address)
+      .reduce((sum, tx) => sum + tx.amount, 0);
+
+    return this.getBalanceOfAddress(address) - alreadyPending;
   }
 
   /**

@@ -10,8 +10,9 @@ const getBalance = (req, res) => {
   }
 
   const balance = blockchain.getBalanceOfAddress(address);
+  const availableBalance = blockchain.getAvailableBalance(address);
 
-  sendSuccess(res, { address, balance });
+  sendSuccess(res, { address, balance, availableBalance });
 };
 
 module.exports = { getBalance };
