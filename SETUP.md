@@ -61,10 +61,15 @@ After both servers start you should see:
 | Action | How |
 |---|---|
 | View the blockchain | Blocks appear automatically on the right panel |
-| Create a transaction | Fill in the form on the left and click **Add Transaction** |
-| Mine a block | Click **Mine Block** in the Stats panel |
+| Create a wallet | Click **Create Wallet** — generates a key pair locally in your browser |
+| Mine a block | Click **Mine Block** in the Stats panel — rewards your active wallet |
+| Create a transaction | Once you have a wallet with a balance, fill in the recipient and amount and click **Add Transaction** — it's signed with your wallet's private key before being sent |
 | Check API health | Open `http://localhost:3002/health` |
 | Auto-refresh | The UI refreshes every 5 seconds automatically |
+
+A brand-new wallet starts with a balance of 0 — mine at least one block with that wallet active
+before trying to send a transaction from it, otherwise it will be rejected for insufficient
+balance.
 
 ---
 
@@ -77,6 +82,9 @@ After both servers start you should see:
 | `npm run server` | API server without auto-reload |
 | `npm run build` | Build React for production |
 | `npm run serve` | Build + start production server |
+| `npm test` | Backend unit + HTTP integration tests |
+| `npm run test:contracts` | Smart contract tests (Hardhat/Chai) |
+| `npm run lint` | Lint the React app |
 
 ---
 
