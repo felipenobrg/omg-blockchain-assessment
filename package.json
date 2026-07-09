@@ -54,6 +54,14 @@
       "react-app"
     ]
   },
+  "nodemonConfig": {
+    "ignore": [
+      "blockchain.json",
+      "blockchain.json.tmp-*",
+      "build/*",
+      "src/*"
+    ]
+  },
   "browserslist": {
     "production": [
       ">0.2%",
