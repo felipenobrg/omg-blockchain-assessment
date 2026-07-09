@@ -155,17 +155,22 @@ All API responses follow this pattern:
 
 | Method | Path | Description |
 |---|---|---|
-| GET | /api/chain | Return the full blockchain |
+| GET | /api/chain | Return the blockchain (optionally paginated, see below) |
 | GET | /api/chain/valid | Return whether the chain is valid |
 | POST | /api/transactions | Add a signed, pending transaction |
 | GET | /api/transactions/pending | View transactions waiting to be mined |
-| GET | /api/transactions/all | View all confirmed transactions across the chain |
+| GET | /api/transactions/all | View confirmed transactions (optionally paginated, see below) |
 | POST | /api/mine | Mine the pending transactions |
 | GET | /api/balance/:address | Get an address balance |
 | GET | /api/stats | View chain and mining statistics |
 | POST | /api/wallets | Generate a wallet-like key pair (server-side, kept for compatibility only) |
 | GET | /api/wallets/:address | View a balance for a wallet address |
 | GET | /health | Health check (no rate limit) |
+
+`GET /api/chain` and `GET /api/transactions/all` accept optional `?limit=&offset=` query
+params. Without them, both return everything (unchanged, backward-compatible default). The
+response's `length`/`count` field always reflects the true total, regardless of pagination —
+only the returned array is sliced.
 
 ---
 

@@ -1,10 +1,15 @@
 const { blockchain } = require('../models');
 const { sendSuccess } = require('../utils/response');
+const { paginate } = require('../utils/pagination');
 
 const getChain = (req, res) => {
+  const { items, total, limit, offset } = paginate(blockchain.chain, req.query);
+
   sendSuccess(res, {
-    chain: blockchain.chain,
-    length: blockchain.chain.length,
+    chain: items,
+    length: total,
+    limit,
+    offset,
   });
 };
 

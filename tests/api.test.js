@@ -28,6 +28,18 @@ test('GET /api/chain starts with just the genesis block', async () => {
   assert.equal(res.body.chain.length, 1);
 });
 
+test('GET /api/chain?limit= paginates without changing the reported total', async () => {
+  await request(app).post('/api/mine').send({ miningRewardAddress: 'pagination-miner' });
+
+  const full = await request(app).get('/api/chain');
+  const paged = await request(app).get('/api/chain?limit=1&offset=0');
+
+  assert.equal(paged.status, 200);
+  assert.equal(paged.body.chain.length, 1);
+  assert.equal(paged.body.length, full.body.chain.length);
+  assert.equal(paged.body.chain[0].hash, full.body.chain[0].hash);
+});
+
 test('GET /api/balance/:address is zero for an unknown address', async () => {
   const res = await request(app).get('/api/balance/some-unknown-address');
 

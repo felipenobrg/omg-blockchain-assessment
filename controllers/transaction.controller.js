@@ -2,6 +2,7 @@ const { blockchain, Transaction } = require('../models');
 const persistenceService = require('../services/persistence.service');
 const { sendSuccess, sendCreated } = require('../utils/response');
 const HttpError = require('../utils/httpError');
+const { paginate } = require('../utils/pagination');
 const {
   isValidAddress,
   isValidSenderAddress,
@@ -68,8 +69,8 @@ const getPendingTransactions = (req, res) => {
 };
 
 const getAllTransactions = (req, res) => {
-  const transactions = blockchain.getAllTransactions();
-  sendSuccess(res, { transactions, count: transactions.length });
+  const { items, total, limit, offset } = paginate(blockchain.getAllTransactions(), req.query);
+  sendSuccess(res, { transactions: items, count: total, limit, offset });
 };
 
 module.exports = { addTransaction, getPendingTransactions, getAllTransactions };
