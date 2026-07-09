@@ -40,7 +40,15 @@ const WalletPanel = ({ wallet, onWalletCreated, chain }) => {
         {loading ? 'Generating...' : 'Create Wallet'}
       </button>
 
-      {message && <div className={`form-message ${message.includes('success') ? 'success' : 'error'}`}>{message}</div>}
+      {message && (
+        <div
+          className={`form-message ${message.includes('success') ? 'success' : 'error'}`}
+          role="status"
+          aria-live="polite"
+        >
+          {message}
+        </div>
+      )}
 
       {wallet && (
         <div className="form-group">

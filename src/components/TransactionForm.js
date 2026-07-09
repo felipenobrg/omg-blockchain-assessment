@@ -85,7 +85,11 @@ const TransactionForm = ({ wallet, onTransactionAdded }) => {
         </div>
 
         {message && (
-          <div className={`form-message ${message.includes('success') ? 'success' : 'error'}`}>
+          <div
+            className={`form-message ${message.includes('success') ? 'success' : 'error'}`}
+            role="status"
+            aria-live="polite"
+          >
             {message}
           </div>
         )}

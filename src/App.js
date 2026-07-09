@@ -38,7 +38,7 @@ function App() {
       <Header />
       <div className="app-container">
         {error && (
-          <div className="error-banner">
+          <div className="error-banner" role="alert">
             <p>{error}</p>
           </div>
         )}
