@@ -1,5 +1,6 @@
 import React from 'react';
 import './BlockchainViewer.css';
+import { truncateHash, formatTimestamp, formatAddress } from '../utils/formatters';
 
 const BlockchainViewer = ({ blockchain }) => {
   if (!blockchain || !blockchain.chain) {
@@ -25,18 +26,18 @@ const BlockchainViewer = ({ blockchain }) => {
             <div className="block-content">
               <div className="block-field">
                 <span className="field-label">Hash:</span>
-                <span className="field-value hash">{block.hash}</span>
+                <span className="field-value hash">{truncateHash(block.hash)}</span>
               </div>
-              
+
               <div className="block-field">
                 <span className="field-label">Previous Hash:</span>
-                <span className="field-value hash">{block.previousHash || 'N/A'}</span>
+                <span className="field-value hash">{truncateHash(block.previousHash) || 'N/A'}</span>
               </div>
-              
+
               <div className="block-field">
                 <span className="field-label">Timestamp:</span>
                 <span className="field-value">
-                  {new Date(block.timestamp).toLocaleString()}
+                  {formatTimestamp(block.timestamp)}
                 </span>
               </div>
               
@@ -57,12 +58,12 @@ const BlockchainViewer = ({ blockchain }) => {
                     <div key={`${block.hash}-${txIndex}`} className="transaction-item">
                       <div className="tx-from">
                         <span className="tx-label">From:</span>
-                        <span className="tx-address">{tx.fromAddress || 'Mining Reward'}</span>
+                        <span className="tx-address">{truncateHash(formatAddress(tx.fromAddress))}</span>
                       </div>
                       <div className="tx-arrow">→</div>
                       <div className="tx-to">
                         <span className="tx-label">To:</span>
-                        <span className="tx-address">{tx.toAddress}</span>
+                        <span className="tx-address">{truncateHash(tx.toAddress)}</span>
                       </div>
                       <div className="tx-amount">{tx.amount}</div>
                     </div>
