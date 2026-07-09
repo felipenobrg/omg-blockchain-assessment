@@ -3,7 +3,7 @@ import './BlockchainViewer.css';
 import { fetchPendingTransactions } from '../api/blockchain.api';
 import usePolling from '../hooks/usePolling';
 import { POLL_INTERVAL_MS } from '../constants';
-import { truncateHash, formatAddress } from '../utils/formatters';
+import { truncateHash, formatAddress, formatAmount } from '../utils/formatters';
 
 const PendingTransactions = () => {
   const [pending, setPending] = useState([]);
@@ -34,7 +34,7 @@ const PendingTransactions = () => {
                 <span className="tx-label">To:</span>
                 <span className="tx-address">{truncateHash(tx.toAddress)}</span>
               </div>
-              <div className="tx-amount">{tx.amount}</div>
+              <div className="tx-amount">{formatAmount(tx.amount)}</div>
             </div>
           ))}
         </div>

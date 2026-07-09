@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './TransactionForm.css';
 import { fetchBalance } from '../api/blockchain.api';
 import { generateWallet } from '../utils/wallet';
+import { formatAmount } from '../utils/formatters';
 
 const WalletPanel = ({ wallet, onWalletCreated, chain }) => {
   const [balance, setBalance] = useState(null);
@@ -55,7 +56,7 @@ const WalletPanel = ({ wallet, onWalletCreated, chain }) => {
           <label>Public Key (address)</label>
           <div className="field-value hash">{wallet.publicKeyHex}</div>
           <label>Balance</label>
-          <div className="field-value">{balance}</div>
+          <div className="field-value">{balance !== null ? formatAmount(balance) : ''}</div>
         </div>
       )}
     </div>
