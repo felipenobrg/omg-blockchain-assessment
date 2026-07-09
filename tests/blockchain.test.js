@@ -105,3 +105,21 @@ test('rejects a transaction whose timestamp was changed after signing', () => {
 
   assert.throws(() => chain.addTransaction(tx), /signature/i);
 });
+
+test('signTransaction throws a clear error given an invalid signing key', () => {
+  const tx = new Transaction('', 'recipient', 10);
+
+  assert.throws(() => tx.signTransaction('not-a-key'), /Unable to sign transaction/);
+});
+
+test('getAllTransactions returns confirmed transactions from every block in order', () => {
+  const chain = new Blockchain(1, 100);
+  chain.minePendingTransactions('miner-a');
+  chain.minePendingTransactions('miner-b');
+
+  const transactions = chain.getAllTransactions();
+
+  assert.equal(transactions.length, 2);
+  assert.equal(transactions[0].toAddress, 'miner-a');
+  assert.equal(transactions[1].toAddress, 'miner-b');
+});
